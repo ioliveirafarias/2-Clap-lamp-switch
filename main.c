@@ -1,22 +1,20 @@
 #include <Arduino.h>
-// #define MS_INTERVAL 255
-// #define relay LED_BUILTIN
-// #define clap A0
 
-int MS_INTERVAL = 800;
-int MS_DEBOUNCE_INTERVAL = 250;
-int relay = LED_BUILTIN;
-int clap = A0;
+#define MS_INTERVAL 800
+#define MS_DEBOUNCE_INTERVAL 250
 
-bool relay_value = LOW;
+#define SENSOR_PIN PB2
+#define RELAY_PIN PB1
+
+bool relay_value = HIGH;
 
 /*******************/
 
-int checkForAClap( int timeLimit_ms ){
+bool checkForAClap( int timeLimit_ms ){
 
   int waiting_start = millis();
   while ( timeLimit_ms > (int)(millis()-waiting_start) ) {
-    if ( digitalRead( clap )) {      
+    if ( digitalRead( SENSOR_PIN )) {      
       return true;    
     }
   }
@@ -25,33 +23,26 @@ int checkForAClap( int timeLimit_ms ){
 
 /*******************/
 
-void setup() {
-
-  pinMode(clap, INPUT);
-  pinMode(relay, OUTPUT);
-
-  Serial.begin(9600);
+void setup(){
+  
+  //pinMode(SENSOR_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite( RELAY_PIN, relay_value);
 }
 
-void loop() {  
+void loop(){
 
-  delay(1000);
+  while( ! digitalRead( SENSOR_PIN ) ){}                            // Awaits for a start clap
 
-  while( ! digitalRead( clap ) ){}                            // Awaits for a start clap
-  delay( MS_DEBOUNCE_INTERVAL );
-
-  Serial.println(1);
-  if( checkForAClap( MS_INTERVAL - MS_DEBOUNCE_INTERVAL ) ){  // Checks for silence between claps
-    return;
-  } 
-
-  Serial.println(2);
-  if( ! checkForAClap( MS_INTERVAL ) ){                       // Cheks for a second clap
+  delay( MS_DEBOUNCE_INTERVAL );                                    // Check for silence between claps
+  if( checkForAClap( MS_INTERVAL - MS_DEBOUNCE_INTERVAL ) ){        
     return;
   }
 
-  relay_value=!relay_value;
-  digitalWrite( relay, relay_value );
-  Serial.println(3);
-  return;
+  if( ! checkForAClap( MS_INTERVAL ) ){                             // Check for a second clap
+    return;
+  }
+
+  digitalWrite( RELAY_PIN, relay_value^=1 );                        // Toggle the relay state
+  delay(MS_INTERVAL*2);
 }
