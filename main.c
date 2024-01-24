@@ -4,13 +4,13 @@
  Globals and constants
 **********************************/
 
-#define MS_INTERVAL 600
-#define MS_DEBOUNCE_INTERVAL (MS_INTERVAL/3)
+#define MS_INTERVAL 500
+#define MS_DEBOUNCE_INTERVAL (MS_INTERVAL/5)
 
-#define SENSOR_PIN PB2
-#define RELAY_PIN PB1
+#define SENSOR_PIN PB0
+#define RELAY_PIN PB2
 
-bool relay_value = HIGH;
+bool relay_value = LOW;
 
 /**********************************
  Auxiliary functions
@@ -33,14 +33,14 @@ bool checkForAClap( int timeLimit_ms ){
 
 void setup(){
   
-  // pinMode(SENSOR_PIN, INPUT); It's input as default, saving some bytes when not re-declaring it
+  //pinMode(SENSOR_PIN, INPUT);
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite( RELAY_PIN, relay_value );
 }
 
 void loop(){
 
-  delay(MS_INTERVAL*3);
+  delay(MS_INTERVAL*2);
 
   while( ! digitalRead( SENSOR_PIN ) ){}                            // Awaits for a start clap                           
 
@@ -49,9 +49,9 @@ void loop(){
     return;
   }
 
-  if( ! checkForAClap( MS_INTERVAL ) ){                             // Check for a second clap
+  if( ! checkForAClap( MS_INTERVAL * 3 ) ){                             // Check for a second clap
     return;
   }
 
-  digitalWrite( RELAY_PIN, relay_value^=1 );                        // Toggle the relay state  
+  digitalWrite( RELAY_PIN, relay_value^=1 );                        // Toggle the relay state    
 }
